@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { ApiError } from './utils/errors.js';
+import walletRoutes from './routes/wallet.routes.js';
 
 export const app = express();
 
@@ -11,6 +12,9 @@ app.use(express.json());
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Mount domain routes
+app.use('/wallets', walletRoutes);
 
 // Global error handling middleware
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

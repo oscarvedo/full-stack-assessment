@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { ApiError } from './utils/errors.js';
 import walletRoutes from './routes/wallet.routes.js';
+import quoteRoutes from './routes/quote.routes.js';
 
 export const app = express();
 
@@ -15,6 +16,7 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // Mount domain routes
 app.use('/wallets', walletRoutes);
+app.use('/quotes', quoteRoutes);
 
 // Global error handling middleware
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

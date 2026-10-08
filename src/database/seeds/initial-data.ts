@@ -106,9 +106,12 @@ export async function runSeed(): Promise<void> {
   }
 }
 
-runSeed()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error('Fatal seed error:', err);
-    process.exit(1);
-  });
+// Only auto-run when invoked via CLI (not imported during tests)
+if (!process.env.VITEST) {
+  runSeed()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error('Fatal seed error:', err);
+      process.exit(1);
+    });
+}

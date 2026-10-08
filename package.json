@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "seed": "tsx src/database/seeds/initial-data.ts",
-    "seed:prod": "node dist/database/seeds/initial-data.js"
+    "seed:prod": "node dist/database/seeds/initial-data.js",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",

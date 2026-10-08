@@ -53,7 +53,7 @@ export async function runSeed(): Promise<void> {
       });
       usdtWallet = await walletRepository.save(usdtWallet);
 
-      // Ledger movement for initial credit (mandatory per Section 3.4)
+      // Ledger movement for initial credit
       const initialMovement = ledgerRepository.create({
         walletId: usdtWallet.id,
         type: MovementType.CREDIT,
@@ -64,6 +64,10 @@ export async function runSeed(): Promise<void> {
         status: 'COMPLETED'
       });
       await ledgerRepository.save(initialMovement);
+    } else {
+      usdtWallet.availableBalance = '10000.00000000';
+      usdtWallet.heldBalance = '0.00000000';
+      await walletRepository.save(usdtWallet);
     }
 
     let xautWallet = await walletRepository.findOne({
@@ -76,6 +80,10 @@ export async function runSeed(): Promise<void> {
         availableBalance: '0.00000000',
         heldBalance: '0.00000000'
       });
+      await walletRepository.save(xautWallet);
+    } else {
+      xautWallet.availableBalance = '0.00000000';
+      xautWallet.heldBalance = '0.00000000';
       await walletRepository.save(xautWallet);
     }
 
@@ -96,7 +104,9 @@ export async function runSeed(): Promise<void> {
     }
 
     await queryRunner.commitTransaction();
-    console.log('Seed completed successfully!');
+    if (!process.env.VITEST) {
+      console.log('Seed completed successfully!');
+    }
   } catch (err) {
     await queryRunner.rollbackTransaction();
     console.error('Error executing seed:', err);

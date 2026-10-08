@@ -1,3 +1,4 @@
+import { validate as isValidUuid } from 'uuid';
 import { AppDataSource } from '../database/data-source.js';
 import { Wallet } from '../entities/wallet.entity.js';
 import { LedgerMovement } from '../entities/ledger-movement.entity.js';
@@ -52,6 +53,10 @@ export class WalletService {
     walletId: string,
     userId: string
   ): Promise<LedgerMovementResponseDto[]> {
+    if (!isValidUuid(walletId)) {
+      throw new ApiError(404, 'Wallet not found');
+    }
+
     // Verify wallet existence and ownership
     const wallet = await this.walletRepository.findOne({
       where: { id: walletId, userId },

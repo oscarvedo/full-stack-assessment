@@ -30,7 +30,12 @@ export class QuoteService {
 
   // Generate a guaranteed commercial quote valid for 30 seconds
   async createQuote({ userId, fromAmount }: CreateQuoteDto): Promise<QuoteResponseDto> {
-    const amount = new BigNumber(fromAmount);
+    let amount: BigNumber;
+    try {
+      amount = new BigNumber(fromAmount);
+    } catch {
+      throw new ApiError(400, 'Invalid amount: fromAmount must be a positive number');
+    }
 
     // Validate positive numeric amount
     if (amount.isNaN() || amount.lte(0)) {

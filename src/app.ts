@@ -4,11 +4,15 @@ import { ApiError } from './utils/errors.js';
 import walletRoutes from './routes/wallet.routes.js';
 import quoteRoutes from './routes/quote.routes.js';
 import exchangeRoutes from './routes/exchange.routes.js';
+import complianceRoutes from './routes/compliance.routes.js';
 
 export const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Disable express x-powered-by header
+app.disable('x-powered-by');
 
 // Health check endpoint for Docker / orchestration
 app.get('/health', (_req: Request, res: Response) => {
@@ -19,6 +23,7 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use('/wallets', walletRoutes);
 app.use('/quotes', quoteRoutes);
 app.use('/exchanges', exchangeRoutes);
+app.use('/compliance', complianceRoutes);
 
 // Global error handling middleware
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

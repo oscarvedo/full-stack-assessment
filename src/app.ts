@@ -6,6 +6,9 @@ import quoteRoutes from './routes/quote.routes.js';
 import exchangeRoutes from './routes/exchange.routes.js';
 import complianceRoutes from './routes/compliance.routes.js';
 
+import swaggerUi from 'swagger-ui-express';
+import { swaggerDocument } from './docs/swagger.js';
+
 export const app = express();
 
 app.use(cors());
@@ -13,6 +16,9 @@ app.use(express.json());
 
 // Disable express x-powered-by header
 app.disable('x-powered-by');
+
+// Interactive OpenAPI Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Health check endpoint for Docker / orchestration
 app.get('/health', (_req: Request, res: Response) => {

@@ -1,0 +1,386 @@
+{
+  "info": {
+    "name": "Digital Assets Platform API",
+    "_postman_id": "b1a2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d",
+    "description": "Colección completa de endpoints para la prueba técnica de Líder Técnico Full-Stack.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "userAuth",
+      "value": "user-001",
+      "type": "string"
+    },
+    {
+      "key": "complianceAuth",
+      "value": "compliance-001",
+      "type": "string"
+    },
+    {
+      "key": "walletId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "quoteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "exchangeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "dynamicKey",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Wallets",
+      "item": [
+        {
+          "name": "GET /wallets (Consultar saldos de usuario)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "const id = Array.isArray(body) && body.length ? body[0].id : (body.data && body.data[0] && body.data[0].id);",
+                  "console.log('walletId =', id, '| HTTP', pm.response.code);",
+                  "pm.test('walletId captured (HTTP ' + pm.response.code + ')', function () {",
+                  "  pm.expect(id, pm.response.text()).to.be.ok;",
+                  "});",
+                  "if (id) pm.collectionVariables.set('walletId', id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/wallets"
+          }
+        },
+        {
+          "name": "GET /wallets/:id/movements (Historial de Ledger)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/wallets/{{walletId}}/movements"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotes",
+      "item": [
+        {
+          "name": "POST /quotes (Solicitar cotización comercial)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "const id = body.id;",
+                  "console.log('quoteId =', id, '| HTTP', pm.response.code);",
+                  "pm.test('quoteId captured (HTTP ' + pm.response.code + ')', function () {",
+                  "  pm.expect(id, pm.response.text()).to.be.ok;",
+                  "});",
+                  "if (id) pm.collectionVariables.set('quoteId', id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAmount\": \"5500\"\n}"
+            },
+            "url": "{{baseUrl}}/quotes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exchanges",
+      "item": [
+        {
+          "name": "POST /exchanges (Ejecutar intercambio con Idempotencia)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('dynamicKey', 'key-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "const id = body.id;",
+                  "console.log('exchangeId =', id, '| HTTP', pm.response.code);",
+                  "pm.test('exchangeId captured (HTTP ' + pm.response.code + ')', function () {",
+                  "  pm.expect(id, pm.response.text()).to.be.ok;",
+                  "});",
+                  "if (id) pm.collectionVariables.set('exchangeId', id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{dynamicKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quoteId\": \"{{quoteId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/exchanges"
+          }
+        },
+        {
+          "name": "GET /exchanges/:id (Detalle y trazabilidad)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/exchanges/{{exchangeId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compliance",
+      "item": [
+        {
+          "name": "GET /compliance/exchanges/pending (Bandeja de pendientes)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{complianceAuth}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/compliance/exchanges/pending"
+          }
+        },
+        {
+          "name": "PATCH /compliance/exchanges/:id/reject (Rechazar y liberar saldo)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{complianceAuth}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Transacción fuera de política de apetito de riesgo.\"\n}"
+            },
+            "url": "{{baseUrl}}/compliance/exchanges/{{exchangeId}}/reject"
+          }
+        },
+        {
+          "name": "POST /quotes (2nd, para aprobar tras el reject)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "const id = body.id;",
+                  "console.log('quoteId =', id, '| HTTP', pm.response.code);",
+                  "pm.test('quoteId captured (HTTP ' + pm.response.code + ')', function () {",
+                  "  pm.expect(id, pm.response.text()).to.be.ok;",
+                  "});",
+                  "if (id) pm.collectionVariables.set('quoteId', id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAmount\": \"5500\"\n}"
+            },
+            "url": "{{baseUrl}}/quotes"
+          }
+        },
+        {
+          "name": "POST /exchanges (2nd, para aprobar tras el reject)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('dynamicKey', 'key-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "const id = body.id;",
+                  "console.log('exchangeId =', id, '| HTTP', pm.response.code);",
+                  "pm.test('exchangeId captured (HTTP ' + pm.response.code + ')', function () {",
+                  "  pm.expect(id, pm.response.text()).to.be.ok;",
+                  "});",
+                  "if (id) pm.collectionVariables.set('exchangeId', id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userAuth}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{dynamicKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quoteId\": \"{{quoteId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/exchanges"
+          }
+        },
+        {
+          "name": "PATCH /compliance/exchanges/:id/approve (Aprobar y liquidar oro)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{complianceAuth}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Verificación de KYC completada y fondos validados.\"\n}"
+            },
+            "url": "{{baseUrl}}/compliance/exchanges/{{exchangeId}}/approve"
+          }
+        }
+      ]
+    }
+  ]
+}

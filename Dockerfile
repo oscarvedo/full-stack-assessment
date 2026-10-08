@@ -6,26 +6,30 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY tsconfig.json ./
+COPY tsconfig.json vitest.config.ts ./
 COPY src ./src
+COPY tests ./tests
 RUN npm run build
 
-# Remove dev dependencies before copying node_modules
-RUN npm prune --production
-
-# Stage 2: Production
+# Stage 2: Runner
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
+COPY --chown=node:node --from=builder /app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=node:node --from=builder /app/package.json ./package.json
+COPY --chown=node:node --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --chown=node:node --from=builder /app/vitest.config.ts ./vitest.config.ts
+COPY --chown=node:node --from=builder /app/src ./src
+COPY --chown=node:node --from=builder /app/tests ./tests
+
+RUN chown -R node:node /app
 
 USER node
 
 EXPOSE 3000
 
-CMD ["node", "dist/index.js"] 
+CMD ["node", "dist/index.js"]

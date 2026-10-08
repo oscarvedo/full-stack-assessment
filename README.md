@@ -12,8 +12,10 @@ cp .env.example .env
 docker compose up -d --build
 
 # 3. Correr la suite de pruebas (41 tests de integración, escenarios a-j cubiertos)
-npm test
+docker compose exec api npm test
 ```
+
+> **Nota para desarrollo local:** Si prefieres correr las pruebas directamente en tu host con `npm test`, ejecuta previamente `npm install`.
 
 > **Base URL:** `http://localhost:3000`  
 > **Swagger UI Interactivo (OpenAPI):** `http://localhost:3000/api-docs` _(para probar los endpoints directamente desde el navegador)_  
@@ -128,6 +130,10 @@ La solución cuenta con **41 pruebas automatizadas** implementadas en Vitest que
 Para ejecutar todas las pruebas:
 
 ```bash
+# Dentro del contenedor (sin requerir Node/npm en el host)
+docker compose exec api npm test
+
+# O directamente en el host (requiere npm install previo)
 npm test
 ```
 
